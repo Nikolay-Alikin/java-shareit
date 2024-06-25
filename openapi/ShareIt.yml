@@ -1,0 +1,236 @@
+openapi: 3.0.3
+info:
+  title: ShareIt
+  description: ShareIt
+  version: 1.0.0
+servers:
+  - url: 'https://localhost:8080'
+
+paths:
+  /users:
+    post:
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        409:
+          description: Conflict
+        400:
+          description: Bad Request
+    get:
+      operationId: getAllUsers
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+  /users/{userId}:
+    patch:
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: Not Found
+        400:
+          description: Bad Request
+    get:
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: Not Found
+    delete:
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        204:
+          description: No Content
+        404:
+          description: Not Found
+  /items:
+    post:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+      operationId: createItem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        404:
+          description: User not found
+        400:
+          description: Bad Request
+    get:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+      operationId: getAllItems
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+  /items/search:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - $ref: '#/components/parameters/text'
+      operationId: searchItems
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+
+  /items/{itemId}:
+    patch:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      operationId: updateItem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        400:
+          description: Bad Request
+        404:
+          description: User not Found
+    get:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      operationId: getItem
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        404:
+          description: Not Found
+
+components:
+  parameters:
+    X-Sharer-User-Id:
+      in: header
+      name: X-Sharer-User-Id
+      required: true
+      schema:
+        type: integer
+        format: int64
+    text:
+      required: true
+      in: query
+      name: text
+      schema:
+        type: string
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          pattern: ^[^\s]*\S[^\s]*$
+        email:
+          type: string
+          pattern: ^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        available:
+          type: boolean
+        request:
+          type: string
