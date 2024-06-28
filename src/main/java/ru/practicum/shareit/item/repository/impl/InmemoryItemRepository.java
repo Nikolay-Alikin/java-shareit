@@ -3,9 +3,11 @@ package ru.practicum.shareit.item.repository.impl;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.entity.ItemEntity;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -15,22 +17,24 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class InmemoryItemRepository implements ItemRepository {
 
-    private final HashMap<Long, ItemEntity> items = new HashMap<>();
+    private final Map<Long, ItemEntity> items = new HashMap<>();
+    private final Map<Long, List<ItemEntity>> userItems = new HashMap<>();
     private long count = 0;
 
     @Override
     public ItemEntity createItem(ItemEntity itemEntity) {
         itemEntity.setId(++count);
+        if (userItems.containsKey(itemEntity.getOwner().getId())) {
+            userItems.put(itemEntity.getOwner().getId(), userItems.get(itemEntity.getOwner().getId()));
+        }
+        userItems.computeIfAbsent(itemEntity.getOwner().getId(), k -> new ArrayList<>()).add(itemEntity);
         items.put(itemEntity.getId(), itemEntity);
         return items.get(itemEntity.getId());
     }
 
     @Override
     public List<ItemEntity> getAllItems(Long xSharerUserId) {
-        return items.values()
-                .stream()
-                .filter(item -> item.getOwner().getId().equals(xSharerUserId))
-                .toList();
+        return userItems.get(xSharerUserId);
     }
 
     @Override
@@ -38,10 +42,12 @@ public class InmemoryItemRepository implements ItemRepository {
         if (search.isBlank()) {
             return Collections.emptyList();
         }
-        return items.values().stream()
+        return userItems.values().stream()
+                .flatMap(List::stream)
                 .filter(item -> Boolean.TRUE == item.getAvailable()
                         && (item.getName().toLowerCase().contains(search.toLowerCase())
-                        || item.getDescription().toLowerCase().contains(search.toLowerCase()))).toList();
+                        || item.getDescription().toLowerCase().contains(search.toLowerCase())))
+                .toList();
     }
 
     @Override
@@ -56,15 +62,11 @@ public class InmemoryItemRepository implements ItemRepository {
             throw new NotFoundException(
                     "У пользователя с id " + updatedItem.getOwner().getId() + " нет доступа к данному элементу");
         }
-        merge(itemForUpdate, updatedItem);
-        return items.get(updatedItem.getId());
-    }
-
-    private void merge(ItemEntity itemForUpdate, ItemEntity updatedItem) {
         itemForUpdate.setDescription(
                 updatedItem.getDescription() == null ? itemForUpdate.getDescription() : updatedItem.getDescription());
         itemForUpdate.setName(updatedItem.getName() == null ? itemForUpdate.getName() : updatedItem.getName());
         itemForUpdate.setAvailable(
                 updatedItem.getAvailable() == null ? itemForUpdate.getAvailable() : updatedItem.getAvailable());
+        return items.get(updatedItem.getId());
     }
 }

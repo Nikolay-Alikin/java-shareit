@@ -6,7 +6,7 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.entity.UserEntity;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import ru.yandex.practicum.generated.model.dto.ItemDTO;
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final ItemMapper itemMapper;
     private final ItemRepository itemRepository;
@@ -32,7 +32,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDTO> searchItems(Long xSharerUserId) {
+    public List<ItemDTO> getUserItems(Long xSharerUserId) {
         return itemMapper.toDto(itemRepository.getAllItems(xSharerUserId));
     }
 
@@ -57,6 +57,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private UserEntity getUser(Long xSharerUserId) {
-        return userMapper.toEntity(userService.getUserById(xSharerUserId));
+        return userMapper.toEntity(userMapper.toDto(userRepository.getUserById(xSharerUserId)));
     }
 }

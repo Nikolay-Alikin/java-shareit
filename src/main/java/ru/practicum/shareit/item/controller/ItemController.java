@@ -29,7 +29,7 @@ public class ItemController implements ItemsApi {
     @Override
     public ResponseEntity<List<ItemDTO>> getAllItems(Long xSharerUserId) {
         log.info("Запрос на получение всех items для пользователя с id={}", xSharerUserId);
-        List<ItemDTO> items = itemService.searchItems(xSharerUserId);
+        List<ItemDTO> items = itemService.getUserItems(xSharerUserId);
         log.info("Получены items={} для пользователя с id={}", items, xSharerUserId);
         return ResponseEntity.ok(items);
     }

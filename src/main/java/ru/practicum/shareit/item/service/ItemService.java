@@ -7,7 +7,7 @@ public interface ItemService {
 
     ItemDTO createItem(Long xSharerUserId, ItemDTO itemDTO);
 
-    List<ItemDTO> searchItems(Long xSharerUserId);
+    List<ItemDTO> getUserItems(Long xSharerUserId);
 
     List<ItemDTO> searchItems(Long xSharerUserId, String search);
 
