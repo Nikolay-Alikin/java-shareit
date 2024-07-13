@@ -17,4 +17,9 @@ public interface UserMapper {
     List<UserDTO> toDtoList(List<UserEntity> entities);
 
     List<UserEntity> toEntityList(List<UserDTO> dtos);
+
+    default void updateUserEntity(UserEntity entity, UserDTO dto) {
+        entity.setName(dto.getName() == null ? entity.getName() : dto.getName());
+        entity.setEmail(dto.getEmail() == null ? entity.getEmail() : dto.getEmail());
+    }
 }
