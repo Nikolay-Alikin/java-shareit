@@ -1,10 +1,14 @@
 package ru.practicum.shareit.user.service.impl;
 
+import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.user.entity.UserEntity;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.repository.UserJpaRepository;
 import ru.practicum.shareit.user.service.UserService;
+import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,35 +19,45 @@ import ru.yandex.practicum.generated.model.dto.UserDTO;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
+    private final UserJpaRepository userRepository;
     private final UserMapper userMapper;
 
     @Override
+    @Transactional
     public UserDTO createUser(UserDTO user) {
-        return userMapper.toDto(userRepository.createUser(userMapper.toEntity(user)));
+        if (Objects.isNull(user.getEmail())) {
+            throw new BadRequestException("Email не может быть пустым");
+        }
+        return userMapper.toDto(userRepository.save(userMapper.toEntity(user)));
     }
 
     @Override
+    @Transactional
     public UserDTO updateUser(UserDTO user) {
-        return userMapper.toDto(userRepository.updateUser(userMapper.toEntity(user)));
+        UserEntity userEntity = getUserEntity(user.getId());
+        userMapper.updateUserEntity(userEntity, user);
+        return userMapper.toDto(userRepository.save(userEntity));
     }
 
     @Override
     public UserDTO getUserById(Long userId) {
-        if (userRepository.getUserById(userId) != null) {
-            return userMapper.toDto(userRepository.getUserById(userId));
-        }
-        log.error("User with id {} not found", userId);
-        throw new NotFoundException("User with id " + userId + " not found");
+        return userMapper.toDto(getUserEntity(userId));
     }
 
     @Override
     public void deleteUser(Long userId) {
-        userRepository.deleteUser(userId);
+        userRepository.deleteById(userId);
     }
 
     @Override
     public List<UserDTO> getAllUsers() {
-        return userMapper.toDtoList(userRepository.getAllUsers());
+        return userMapper.toDtoList(userRepository.findAll());
+    }
+
+    private UserEntity getUserEntity(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> {
+            log.error("Пользователь с id={} не найден", userId);
+            return new NotFoundException("Пользователь с id " + userId + " не найден");
+        });
     }
 }

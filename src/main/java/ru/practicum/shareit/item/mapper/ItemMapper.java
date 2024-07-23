@@ -16,7 +16,17 @@ public interface ItemMapper {
 
     List<ItemEntity> toEntity(List<ItemDTO> dtos);
 
+    @Mapping(target = "lastBooking", ignore = true)
+    @Mapping(target = "nextBooking", ignore = true)
+    @Mapping(target = "comments", ignore = true)
     ItemDTO toDto(ItemEntity itemDTO);
 
     List<ItemDTO> toDto(List<ItemEntity> dtos);
+
+    default void updateItem(ItemEntity entity, ItemDTO dto) {
+        entity.setDescription(dto.getDescription() == null ? entity.getDescription() : dto.getDescription());
+        entity.setName(dto.getName() == null ? entity.getName() : dto.getName());
+        entity.setAvailable(dto.getAvailable() == null ? entity.getAvailable() : dto.getAvailable());
+        entity.setRequest(dto.getRequest() == null ? entity.getRequest() : dto.getRequest());
+    }
 }
