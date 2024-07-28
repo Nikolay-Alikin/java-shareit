@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16.1
+    container_name: shareit-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_USER=dbuser
+      - POSTGRES_DB=shareit
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+  server:
+    build: server
+    container_name: ShareIt_Server
+    ports:
+      - "9090:9090"
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=shareit
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=12345
+  gateway:
+    build: gateway
+    container_name: ShareIt_gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - server
+    environment:
+      - SHAREIT_SERVER_URL=http://server:9090
