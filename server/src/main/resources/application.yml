@@ -1,0 +1,18 @@
+server:
+  port: 9090
+
+spring:
+  liquibase:
+    change-log: db/changelog/changelog.yml
+  sql:
+    init:
+      mode: embedded
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true

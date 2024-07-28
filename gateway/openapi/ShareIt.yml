@@ -1,0 +1,583 @@
+openapi: 3.0.3
+info:
+  title: ShareIt
+  description: ShareIt
+  version: 1.0.0
+servers:
+  - url: 'https://localhost:8080'
+
+paths:
+  /users:
+    post:
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        409:
+          description: Conflict
+        400:
+          description: Bad Request
+    get:
+      operationId: getAllUsers
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+  /users/{userId}:
+    patch:
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: Not Found
+        400:
+          description: Bad Request
+    get:
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: Not Found
+    delete:
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        204:
+          description: No Content
+        404:
+          description: Not Found
+  /items:
+    post:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+      operationId: createItem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        404:
+          description: User not found
+        400:
+          description: Bad Request
+    get:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+      operationId: getAllItems
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+  /items/search:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - $ref: '#/components/parameters/text'
+      operationId: searchItems
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+
+  /items/{itemId}:
+    patch:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      operationId: updateItem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        400:
+          description: Bad Request
+        404:
+          description: User not Found
+    get:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      operationId: getItem
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        404:
+          description: Not Found
+  /items/{itemId}/comment:
+    post:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      operationId: createComment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentRequest'
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        400:
+          description: Bad Request
+
+  /bookings:
+    post:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+      operationId: createBooking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        404:
+          description: User not found
+        400:
+          description: Bad Request
+    get:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - $ref: '#/components/parameters/state'
+      operationId: getBookings
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        400:
+          description: Bad Request
+  /bookings/owner:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - $ref: '#/components/parameters/state'
+      operationId: getOwnerBookings
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        400:
+          description: Bad Request
+        404:
+          description: User not found
+
+  /bookings/{bookingId}:
+    patch:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - $ref: '#/components/parameters/bookingId'
+        - $ref: '#/components/parameters/approved'
+      operationId: approveBooking
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        400:
+          description: Bad Request
+    get:
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - $ref: '#/components/parameters/bookingId'
+      operationId: getBooking
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        404:
+          description: Not Found
+  /requests:
+    post:
+      operationId: createRequest
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResponse'
+        404:
+          description: User not found
+        400:
+          description: Bad Request
+    get:
+      operationId: getRequests
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RequestResponse'
+        404:
+          description: User not found
+  /requests/all:
+    get:
+      operationId: getAllRequests
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - $ref: '#/components/parameters/from'
+        - $ref: '#/components/parameters/size'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RequestResponse'
+        404:
+          description: User not found
+  /requests/{requestId}:
+    get:
+      operationId: getRequest
+      parameters:
+        - $ref: '#/components/parameters/X-Sharer-User-Id'
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResponse'
+        404:
+          description: User not found
+
+components:
+  parameters:
+    X-Sharer-User-Id:
+      in: header
+      name: X-Sharer-User-Id
+      required: true
+      schema:
+        type: integer
+        format: int64
+    text:
+      required: true
+      in: query
+      name: text
+      schema:
+        type: string
+    bookingId:
+      required: true
+      in: path
+      name: bookingId
+      schema:
+        type: integer
+        format: int64
+    approved:
+      required: true
+      in: query
+      name: approved
+      schema:
+        type: boolean
+    state:
+      required: false
+      in: query
+      name: state
+      schema:
+        default: "ALL"
+        type: string
+    from:
+      required: false
+      in: query
+      name: from
+      schema:
+        default: 0
+        type: integer
+    size:
+      required: false
+      in: query
+      name: size
+      schema:
+        default: 10
+        type: integer
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          pattern: ^\S.*\S$
+        email:
+          type: string
+          pattern: ^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        available:
+          type: boolean
+        requestId:
+          type: integer
+          format: int64
+        lastBooking:
+          $ref: '#/components/schemas/LastBooking'
+        nextBooking:
+          $ref: '#/components/schemas/NextBooking'
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentResponse'
+    CommentRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          pattern: ^(?!\s*$).+
+    CommentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        text:
+          type: string
+          pattern: ^(?!\s*$).+
+        authorName:
+          type: string
+        created:
+          type: string
+          format: date-time
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        status:
+          type: string
+        booker:
+          properties:
+            id:
+              type: integer
+              format: int64
+        item:
+          properties:
+            id:
+              type: integer
+              format: int64
+            name:
+              type: string
+              pattern: ^[^\s]*\S[^\s]*$
+    BookingRequest:
+      type: object
+      required:
+        - itemId
+        - start
+        - end
+      properties:
+        itemId:
+          type: integer
+          format: int64
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+    NextBooking:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        bookerId:
+          type: integer
+          format: int64
+    LastBooking:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        bookerId:
+          type: integer
+          format: int64
+    Request:
+      type: object
+      required:
+        - description
+      properties:
+        description:
+          type: string
+          pattern: ^\S.*\S$
+    RequestResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        description:
+          type: string
+          pattern: ^\S.*\S$
+        created:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestedItems'
+    RequestedItems:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          pattern: ^[^\s]*\S[^\s]*$
+        ownerId:
+          type: integer
+          format: int64
